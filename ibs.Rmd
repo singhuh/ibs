@@ -60,16 +60,14 @@ ibs3t_both <- ibs3t %>% select(id, group, Day, drug_class) %>%
   select(group, rx1_class, rx2_class, rx3_class, rx4_class, rx5_class, rx6_class)
 
 # Making the Sankey diagram using hchart function
-ibs_sankey <- hchart(data_to_sankey(ibssmart), "sankey", name = "Sankey")
-
-# Making the Sankey diagram using hchart function
+int_sankey <- hchart(data_to_sankey(ibssmart), "sankey", name = "Sankey")
 ctrl_sankey <- hchart(data_to_sankey(control), "sankey", name = "Sankey")
 ibs_sankey <- hchart(data_to_sankey(ibs3t_ibs), "sankey", name = "Sankey")
 trio_sankey <- hchart(data_to_sankey(ibs3t_trio), "sankey", name = "Sankey")
 ibstrio_sankey <- hchart(data_to_sankey(ibs3t_both), "sankey", name = "Sankey")
 
 # Adding customization
-p1int<- ibs_sankey %>% 
+p1int<- int_sankey %>% 
   hc_title(text = "Flow of Drug Classes Between Encounters") %>%
   hc_subtitle(text = "<bold>Intervention Group</bold>") %>%
   hc_caption(text = "<b>
