@@ -373,4 +373,3 @@ trans_trio
 ```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
 trans_ibstrio
 ```
-trans_trio
