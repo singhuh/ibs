@@ -261,6 +261,12 @@ download_file(
 )
 ```
 
+>**Flow of Drug Classes Between Clinical Encounters in the Intervention Group.**
+The Sankey diagram illustrates longitudinal transitions in medication class use across six successive clinical encounters among participants in the intervention group. Each vertical column represents one encounter (rx1 through rx6), and each colored node corresponds to a distinct drug class, including gastro‑motility agents, anti-infective agents, antidepressants, anxiolytics, antiallergics, proton pump inhibitors/H2 blockers (PPI/H2B), and an “other” category. <br>
+The width of each flow is proportional to the number of participants whose medication class changed or remained stable between encounters.<br>
+Early encounters (rx1–rx2) show substantial initiation of gastro‑motility agents and PPI/H2B therapies, while anti-infective and antiallergic agents appear less frequently. Across encounters, the “other” medication category remains a dominant pathway, indicating frequent transitions into heterogeneous or infrequently used drug classes.<br>
+By later encounters (rx5–rx6), gastro‑motility agents again form a major proportion of flows, suggesting recurrent or persistent prescribing patterns in this class.<br>
+The diagram highlights both persistence (e.g., continuing gastro‑motility therapy across multiple encounters) and variability in medication use, with numerous cross‑class transitions. 
 
 ##### Control
 ```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
@@ -282,6 +288,16 @@ download_file(
   self_contained = TRUE
 )
 ```
+
+> Similar graph for the control group is shown above.
+> These graphs reveal distinct patterns in prescribing behavior and medication stability between the intervention (IBS-Smart, Trio-Smart, Combined IBS-Smart & Trio-Smart) and control groups.<br>
+**Overall Pattern of Medication Transitions**<br>
+*Intervention Group:*<br>
+The flows show more concentrated transitions, especially through `gastro‑motility agents`, `anti‑infective agents`, and `PPI/H2B classes`.<br>
+The “other” medication category is consistently prominent but becomes especially dominant around rx3–rx5, indicating broad shifts into miscellaneous or less frequent drug classes.<br>
+*Control Group:*<br>
+The flows appear more diffuse, with a wider variety of medication classes represented (e.g., `antidiarrheal`, `analgesic`).<br>
+Medications are more heterogeneous across encounters, suggesting less clustering into specific therapeutic classes.<br>
 
 ##### IBS only
 ```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
@@ -354,10 +370,26 @@ download_file(
 trans_i
 ```
 
+> The transition matrix for the intervention group quantitatively supports the Sankey visualization. Consistent with the prominent ‘other’ nodes and thick connecting bands in the Sankey, ‘other’ was the most frequent destination class (271/420 transitions, ~64.5%) and showed high persistence (other→other: 189/250, 75.6%).<br> 
+
+  + Gastro‑motility agents were also common and exhibited partial stability (gastro→gastro: 21/72, 29.2%) with frequent transitions to ‘other’ (gastro→other: 30/72, 41.7%) and to PPI/H2B (9/72, 12.5%). <br>
+  + Anti‑infective transitions often moved toward gastro‑motility (12/33, 36.4%) or ‘other’ (10/33, 30.3%), consistent with the cross‑class flows shown in the Sankey. <br>
+  + Differences between the table and figure largely reflect that the table pools transitions across all encounter intervals, whereas the Sankey displays encounter-specific flow patterns. The Sankey is “time-resolved”; the table is “time-collapsed”. If a transition occurs mostly early (e.g., rx1→rx2) but not later, the Sankey will show that timing. The table will average it into one number.
+
 ##### Control
 ```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
 trans_c
 ```
+
+> Medication transitions differed between groups. In the intervention group, movements into the “other” class were most frequent (64.5% of all transitions), with strong persistence within this category (other→other: 75.6%) and notable stability in gastro‑motility agents (gastro→gastro: 29.2%). <br>
+
+> In contrast, the control group showed more heterogeneous switching patterns, including greater involvement of PPI/H2B and analgesic classes and lower stability within both “other” (67.4%) and gastro‑motility (17.6%). <br> 
+
+>Controls also exhibited more frequent transitions from and into PPI/H2B, whereas in the intervention group, anti‑infective agents more often shifted toward gastro‑motility (36.4% vs. 20.6%).  <br>
+
+>Overall, the transition matrices support the Sankey visualizations: the intervention group demonstrated more consistent medication trajectories, while the control group showed broader and less stable class‑to‑class movement.
+
+> In summary, *compared with the intervention transition table, the controls show more PPI/H2B involvement, greater switching from gastro‑motility into “other,” and lower persistence within “other” and gastro‑motility. The intervention table shows greater continuity (especially other → other and gastro → gastro) and stronger anti‑infective → gastro‑motility transitions.*
 
 ##### ibs-smart ONLY 
 ```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
