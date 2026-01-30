@@ -1,0 +1,378 @@
+---
+title: "IBS<img src='AHRM.png' style='float: right; width: 200px;'/>"
+author: "AHRM"
+# output: html_document
+always_allow_html: true
+output:
+  html_document:
+    code_folding: hide
+    df_print: paged
+    css: style.css
+  pdf_document: default
+  word_document: default
+  # github_document: default
+  fig_caption: yes
+  keep_md: yes
+  number_sections: yes
+  toc: yes
+  toc_depth: 2
+  logo: "AHRM.png"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## **Analysis of IBS-Smart/Trio-Smart vs Control on IBS-specific medications** {.tabset .tabset-fade .tabset-pills}
+### Medications by Encounters{.tabset}
+#### Sankey graph{.tabset}
+##### IBS/TRIO/Both
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
+# pacman checks and installs the required packages if not installed already 
+# knitr::include_graphics("")
+pacman::p_load(highcharter, htmlwidgets, dplyr, readr, ggplot2, webshot, readxl, officer, tidyr, msm, downloadthis, flextable) 
+
+# Pulling data into R-console
+ibs3 <- read_excel("E:\\AHRM\\Data\\propensity\\ibs3.xlsx")
+ibs3t <- read_excel("E:\\AHRM\\Data\\propensity\\ibs3t.xlsx")
+ibs3t2 <- ibs3t %>% select(id, group, Day, drug_class) %>% 
+  pivot_wider(names_from = Day, values_from = drug_class) %>% 
+  mutate(grp = case_when(group == 'control'~'control', TRUE ~ 'int')) %>%
+  select(-c(id,group)) %>% select(grp, rx1_class, rx2_class, rx3_class, rx4_class, rx5_class, rx6_class)
+
+control <- ibs3t2 %>% filter(grp == 'control')
+ibssmart <- ibs3t2 %>% filter(grp == 'int')
+
+ibs3t_ibs <- ibs3t %>% select(id, group, Day, drug_class) %>% 
+  filter(group == 'ibs-smart ONLY') %>%
+  pivot_wider(names_from = Day, values_from = drug_class) %>%
+  select(group, rx1_class, rx2_class, rx3_class, rx4_class, rx5_class, rx6_class)
+
+ibs3t_trio <- ibs3t %>% select(id, group, Day, drug_class) %>% 
+  filter(group == 'trio-smart ONLY') %>%
+  pivot_wider(names_from = Day, values_from = drug_class) %>%
+  select(group, rx1_class, rx2_class, rx3_class, rx4_class, rx5_class, rx6_class)
+
+ibs3t_both <- ibs3t %>% select(id, group, Day, drug_class) %>% 
+  filter(group == 'ibs-smart AND trio-smart') %>%
+  pivot_wider(names_from = Day, values_from = drug_class) %>%
+  select(group, rx1_class, rx2_class, rx3_class, rx4_class, rx5_class, rx6_class)
+
+# Making the Sankey diagram using hchart function
+ibs_sankey <- hchart(data_to_sankey(ibssmart), "sankey", name = "Sankey")
+
+# Making the Sankey diagram using hchart function
+ctrl_sankey <- hchart(data_to_sankey(control), "sankey", name = "Sankey")
+ibs_sankey <- hchart(data_to_sankey(ibs3t_ibs), "sankey", name = "Sankey")
+trio_sankey <- hchart(data_to_sankey(ibs3t_trio), "sankey", name = "Sankey")
+ibstrio_sankey <- hchart(data_to_sankey(ibs3t_both), "sankey", name = "Sankey")
+
+# Adding customization
+p1int<- ibs_sankey %>% 
+  hc_title(text = "Flow of Drug Classes Between Encounters") %>%
+  hc_subtitle(text = "<bold>Intervention Group</bold>") %>%
+  hc_caption(text = "<b>
+ Footnote:<br>
+ Gastromotility agents include Erythromycin, Naltrexone among other drugs <br>
+ Anti-infective agents include Xifaxan, Zovirax 
+ <b>") %>%
+  hc_add_theme(hc_theme_economist())
+
+# -----------------------------------------------------
+p1ctrl<- ctrl_sankey %>% 
+  hc_title(text = "Flow of Drug Classes Between Encounters") %>%
+  hc_subtitle(text = "Control Group") %>%
+  hc_caption(text = "<b>
+ Footnote:<br>
+ Gastromotility agents include Erythromycin, Naltrexone among other drugs <br>
+ Anti-infective agents include Xifaxan, Zovirax 
+ <b>")  %>%
+  hc_add_theme(hc_theme_economist())
+# -----------------------------------------------------
+p1ibs<- ibs_sankey %>% 
+  hc_title(text = "Flow of Drug Classes Between Encounters") %>%
+  hc_subtitle(text = "IBS Only Group") %>%
+  hc_caption(text = "<b>
+ Footnote:<br>
+ Gastromotility agents include Erythromycin, Naltrexone among other drugs <br>
+ Anti-infective agents include Xifaxan, Zovirax 
+ <b>")  %>%
+  hc_add_theme(hc_theme_economist())
+# -----------------------------------------------------
+p1trio<- trio_sankey %>% 
+  hc_title(text = "Flow of Drug Classes Between Encounters") %>%
+  hc_subtitle(text = "Trio-Smart Only Group") %>%
+  hc_caption(text = "<b>
+ Footnote:<br>
+ Gastromotility agents include Erythromycin, Naltrexone among other drugs <br>
+ Anti-infective agents include Xifaxan, Zovirax 
+ <b>")  %>%
+  hc_add_theme(hc_theme_economist())
+# -----------------------------------------------------
+p1ibstrio<- ibstrio_sankey %>% 
+  hc_title(text = "Flow of Drug Classes Between Encounters") %>%
+  hc_subtitle(text = "IBS & Trio-Smart Combined Group") %>%
+  hc_caption(text = "<b>
+ Footnote:<br>
+ Gastromotility agents include Erythromycin, Naltrexone among other drugs <br>
+ Anti-infective agents include Xifaxan, Zovirax 
+ <b>")  %>%
+  hc_add_theme(hc_theme_economist())
+# -------------------------------------------------------
+# Saving as html on local drive
+htmlwidgets::saveWidget(widget = p1int, file = "E:\\AHRM\\Data\\propensity\\ibs\\p1int.html")
+htmlwidgets::saveWidget(widget = p1ctrl, file = "E:\\AHRM\\Data\\propensity\\ibs\\p1ctrl.html")
+htmlwidgets::saveWidget(widget = p1ibs, file = "E:\\AHRM\\Data\\propensity\\ibs\\p1ibs.html")
+htmlwidgets::saveWidget(widget = p1trio, file = "E:\\AHRM\\Data\\propensity\\ibs\\p1trio.html")
+htmlwidgets::saveWidget(widget = p1ibstrio, file = "E:\\AHRM\\Data\\propensity\\ibs\\p1ibstrio.html")
+
+# For generating png file, install phantomjs()
+# webshot::install_phantomjs()
+
+# Save as png from the html file generated earlier
+# webshot::install_phantomjs()
+# Save as png from the html file generated earlier
+# webshot::webshot(url="E:\\AHRM\\Data\\propensity\\p1int.html", file = "E:\\AHRM\\Data\\propensity\\ibs\\p1int.png", delay=10,
+#                   vwidth = 1200, vheight = 800, cliprect = "viewport")
+# 
+# webshot::webshot(url="E:\\AHRM\\Data\\propensity\\p1ctrl.html", file = "E:\\AHRM\\Data\\propensity\\ibs\\p1ctrl.png", delay=10, vwidth = 1200, vheight = 800, cliprect = "viewport")
+# webshot::webshot(url="E:\\AHRM\\Data\\propensity\\ibs\\p1ibs.html", file = "E:\\AHRM\\Data\\propensity\\ibs\\p1ibs.png", delay=10, vwidth = 1200, vheight = 800, cliprect = "viewport")
+# webshot::webshot(url="E:\\AHRM\\Data\\propensity\\ibs\\p1trio.html", file = "E:\\AHRM\\Data\\propensity\\ibs\\p1trio.png", delay=10, vwidth = 1200, vheight = 800, cliprect = "viewport")
+# webshot::webshot(url="E:\\AHRM\\Data\\propensity\\ibs\\p1ibstrio.html", file = "E:\\AHRM\\Data\\propensity\\ibs\\p1ibstrio.png", delay=10, vwidth = 1200, vheight = 800, cliprect = "viewport")
+# --------------------------------------------
+
+ibs3t <- ibs3t %>% mutate(gr = case_when(group == 'control' ~ 'control', TRUE ~ 'intervention'))
+
+ibs3ti <- ibs3t %>% filter(gr == 'intervention')
+ibs3tc <- ibs3t %>% filter(gr == 'control')
+ibs3tibs <- ibs3t %>% filter(group == 'ibs-smart ONLY')
+ibs3ttrio <- ibs3t %>% filter(group == 'trio-smart ONLY')
+ibs3tibstrio <- ibs3t %>% filter(group == 'ibs-smart AND trio-smart')
+
+std_border <- fp_border(color = "gray")
+# -------------------------------------------------------------------------
+trans_i <- statetable.msm(drug, id, data = ibs3ti) %>% 
+  as_flextable(include.column_percent = FALSE, include.table_percent = FALSE,
+include.row_percent = TRUE) %>% 
+  theme_booktabs() %>%               
+  autofit() %>%                      
+  padding(padding = 1, part = "all") %>% 
+  fontsize(size = 10, part = "all") %>%
+  set_caption(
+    as_paragraph(
+      as_chunk("Transitional probabilities of medication switching for IBS/Trio/Both", props = fp_text_default(font.family = "Garamond", font.size = 14))
+    ), word_stylename = "Table Caption"
+  )
+
+trans_i <- hline(x = trans_i, part = "all", border = std_border)
+# State transitions row by row
+# trans_ip <- round(100*prop.table(trans_i, 1),1)
+# trans_ipdf <- as.data.frame(trans_ip)
+my_border <- fp_border(color = "black", width = 1, style = "solid")
+trans_c <- statetable.msm(drug, id, data = ibs3tc) %>% 
+  as_flextable(include.column_percent = FALSE, include.table_percent = FALSE,
+include.row_percent = TRUE) %>% 
+  theme_booktabs() %>%               
+  autofit() %>%                      
+  padding(padding = 1, part = "all") %>% 
+  fontsize(size = 10, part = "all") %>%
+  set_caption(
+    as_paragraph(
+      as_chunk("Transitional probabilities of medication switching for Controls", props = fp_text_default(font.family = "Garamond", font.size = 14))
+    ), word_stylename = "Table Caption"
+  )
+
+trans_c <- hline(x = trans_c, part = "all", border = std_border)
+# trans_c2 <- statetable.msm(drug, id, data = ibs3tc) 
+# State transitions row by row
+# trans_cp <- round(100*prop.table(trans_c2, 1),1) 
+ 
+# trans_cpdf <- as.data.frame(trans_cp)
+
+# ------------------------------------------------------------------------
+ibs3tibs <- ibs3t %>% filter(group == 'ibs-smart ONLY')
+trans_ibs <- statetable.msm(drug, id, data = ibs3tibs) %>% 
+  as_flextable(include.column_percent = FALSE, include.table_percent = FALSE,
+include.row_percent = TRUE) %>% 
+  theme_booktabs() %>%               
+  autofit() %>%                      
+  padding(padding = 1, part = "all") %>% 
+  fontsize(size = 10, part = "all") %>%
+  set_caption(
+    as_paragraph(
+      as_chunk("Transitional probabilities of medication switching for IBS Only Group", props = fp_text_default(font.family = "Garamond", font.size = 14))
+    ), word_stylename = "Table Caption"
+  )
+
+trans_ibs <- hline(x = trans_ibs, part = "all", border = std_border)
+# ------------------------------------------------------------------------
+# ------------------------------------------------------------------------
+ibs3ttrio <- ibs3t %>% filter(group == 'trio-smart ONLY')
+trans_trio <- statetable.msm(drug, id, data = ibs3ttrio) %>% 
+  as_flextable(include.column_percent = FALSE, include.table_percent = FALSE,
+include.row_percent = TRUE) %>% 
+  theme_booktabs() %>%               
+  autofit() %>%                      
+  padding(padding = 1, part = "all") %>% 
+  fontsize(size = 10, part = "all") %>%
+  set_caption(
+    as_paragraph(
+      as_chunk("Transitional probabilities of medication switching for Trio-Smart Only Group", props = fp_text_default(font.family = "Garamond", font.size = 14))
+    ), word_stylename = "Table Caption"
+  )
+
+trans_trio <- hline(x = trans_trio, part = "all", border = std_border)
+# ------------------------------------------------------------------------
+# ------------------------------------------------------------------------
+ibs3tibstrio <- ibs3t %>% filter(group == 'ibs-smart AND trio-smart')
+trans_ibstrio <- statetable.msm(drug, id, data = ibs3tibstrio) %>% 
+  as_flextable(include.column_percent = FALSE, include.table_percent = FALSE,
+include.row_percent = TRUE) %>% 
+  theme_booktabs() %>%               
+  autofit() %>%                      
+  padding(padding = 1, part = "all") %>% 
+  fontsize(size = 10, part = "all") %>%
+  set_caption(
+    as_paragraph(
+      as_chunk("Transitional probabilities of medication switching for IBS & Trio-Smart Combined Group", props = fp_text_default(font.family = "Garamond", font.size = 14))
+    ), word_stylename = "Table Caption"
+  )
+
+trans_ibstrio <- hline(x = trans_ibstrio, part = "all", border = std_border)
+# ------------------------------------------------------------------------
+
+
+p1int
+
+download_file(
+  path = "E:\\AHRM\\Data\\propensity\\ibs\\p1int.png",
+  output_name = "Figure 1 Medications IBS/TRIO/Both" ,
+  button_label = "download (.png)",
+  button_type = "primary",
+  has_icon = TRUE,
+  self_contained = TRUE
+)
+download_file(
+  path = "E:\\AHRM\\Data\\propensity\\ibs\\p1int.html",
+  output_name = "Figure 1 Medications IBS/TRIO/Both" ,
+  button_label = "download interactive (.html)",
+  button_type = "primary",
+  has_icon = TRUE,
+  self_contained = TRUE
+)
+```
+
+
+##### Control
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
+p1ctrl
+download_file(
+  path = "E:\\AHRM\\Data\\propensity\\ibs\\p1ctrl.png",
+  output_name = "Figure 1 Medications Control" ,
+  button_label = "download (.png)",
+  button_type = "primary",
+  has_icon = TRUE,
+  self_contained = TRUE
+)
+download_file(
+  path = "E:\\AHRM\\Data\\propensity\\ibs\\p1ctrl.html",
+  output_name = "Figure 1 Medications Control" ,
+  button_label = "download interactive (.html)",
+  button_type = "primary",
+  has_icon = TRUE,
+  self_contained = TRUE
+)
+```
+
+##### IBS only
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
+p1ibs
+download_file(
+  path = "E:\\AHRM\\Data\\propensity\\ibs\\p1ibs.png",
+  output_name = "Figure 1 Medications IBS only" ,
+  button_label = "download (.png)",
+  button_type = "primary",
+  has_icon = TRUE,
+  self_contained = TRUE
+)
+download_file(
+  path = "E:\\AHRM\\Data\\propensity\\ibs\\p1ibs.html",
+  output_name = "Figure 1 Medications IBS only" ,
+  button_label = "download interactive (.html)",
+  button_type = "primary",
+  has_icon = TRUE,
+  self_contained = TRUE
+)
+```
+
+##### Trio-Smart only
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
+p1trio
+download_file(
+  path = "E:\\AHRM\\Data\\propensity\\ibs\\p1trio.png",
+  output_name = "Figure 1 Medications Trio Only Group" ,
+  button_label = "download (.png)",
+  button_type = "primary",
+  has_icon = TRUE,
+  self_contained = TRUE
+)
+download_file(
+  path = "E:\\AHRM\\Data\\propensity\\ibs\\p1trio.html",
+  output_name = "Figure 1 Medications Trio Only Group" ,
+  button_label = "download interactive (.html)",
+  button_type = "primary",
+  has_icon = TRUE,
+  self_contained = TRUE
+)
+```
+
+
+##### IBS & Trio-Smart 
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
+p1ibstrio
+download_file(
+  path = "E:\\AHRM\\Data\\propensity\\ibs\\p1ibstrio.png",
+  output_name = "Figure 1 Medications IBS & Trio-Smart Combined" ,
+  button_label = "download (.png)",
+  button_type = "primary",
+  has_icon = TRUE,
+  self_contained = TRUE
+)
+download_file(
+  path = "E:\\AHRM\\Data\\propensity\\ibs\\p1ibstrio.html",
+  output_name = "Figure 1 Medications IBS & Trio-Smart Combined" ,
+  button_label = "download (.html)",
+  button_type = "primary",
+  has_icon = TRUE,
+  self_contained = TRUE
+)
+```
+
+
+#### Transitional Probabilities {.tabset}
+##### IBS/TRIO/Both
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
+trans_i
+```
+
+##### Control
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
+trans_c
+```
+
+##### ibs-smart ONLY 
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
+trans_ibs
+```
+
+##### trio-smart ONLY
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
+trans_trio
+```
+
+##### ibs-smart AND trio-smart 
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
+trans_ibstrio
+```
+trans_trio
