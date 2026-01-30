@@ -27,7 +27,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## **Analysis of IBS-Smart/Trio-Smart vs Control on IBS-specific medications** {.tabset .tabset-fade .tabset-pills}
 ### Medications by Encounters{.tabset}
 #### Sankey graph{.tabset}
-##### IBS/TRIO/Both
+##### Intervention (IBS/TRIO/Both)
 ```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
 # pacman checks and installs the required packages if not installed already 
 # knitr::include_graphics("")
@@ -365,7 +365,7 @@ download_file(
 
 
 #### Transitional Probabilities {.tabset}
-##### IBS/TRIO/Both
+##### Intervention (IBS/TRIO/Both)
 ```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
 trans_i
 ```
