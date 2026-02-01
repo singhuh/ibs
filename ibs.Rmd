@@ -31,7 +31,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
 # pacman checks and installs the required packages if not installed already 
 # knitr::include_graphics("")
-pacman::p_load(highcharter, htmlwidgets, dplyr, readr, ggplot2, webshot, readxl, officer, tidyr, msm, downloadthis, flextable) 
+pacman::p_load(highcharter, htmlwidgets, dplyr, readr, ggplot2, webshot, readxl, officer, tidyr, msm, downloadthis, flextable, MatchIt, cobalt) 
+load("E:/AHRM/Data/propensity/dt_test_prep.Rdata")
 
 # Pulling data into R-console
 ibs3 <- read_excel("E:\\AHRM\\Data\\propensity\\ibs3.xlsx")
@@ -371,7 +372,6 @@ trans_i
 ```
 
 > The transition matrix for the intervention group quantitatively supports the Sankey visualization. Consistent with the prominent ‘other’ nodes and thick connecting bands in the Sankey, ‘other’ was the most frequent destination class (271/420 transitions, ~64.5%) and showed high persistence (other→other: 189/250, 75.6%).<br> 
-
   + Gastro‑motility agents were also common and exhibited partial stability (gastro→gastro: 21/72, 29.2%) with frequent transitions to ‘other’ (gastro→other: 30/72, 41.7%) and to PPI/H2B (9/72, 12.5%). <br>
   + Anti‑infective transitions often moved toward gastro‑motility (12/33, 36.4%) or ‘other’ (10/33, 30.3%), consistent with the cross‑class flows shown in the Sankey. <br>
   + Differences between the table and figure largely reflect that the table pools transitions across all encounter intervals, whereas the Sankey displays encounter-specific flow patterns. The Sankey is “time-resolved”; the table is “time-collapsed”. If a transition occurs mostly early (e.g., rx1→rx2) but not later, the Sankey will show that timing. The table will average it into one number.
@@ -405,3 +405,57 @@ trans_trio
 ```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show', echo=FALSE}
 trans_ibstrio
 ```
+
+
+#### Propensity Score Matching {.tabset}
+##### IBS-Smart {.tabset}
+###### Summary
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show'}
+dt_test_prep <- dt_test_prep %>% mutate(ibssmart = case_when(is.na(ibs_smart)~0, TRUE~ibs_smart))                
+mod_matchibs <- matchit(ibssmart ~ age+ history_before_2019+MCAS_first_visit+IBS_D_first_visit+refer_y, 
+                     method = "nearest", 
+                     data = dt_test_prep)
+summary(mod_matchibs)
+```
+
+###### eQQ Plot
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show'}
+plot(mod_matchibs)
+```
+
+###### Covariate balance
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show'}
+love.plot(mod_matchibs)   
+```
+
+> Figure presents a love plot summarizing covariate balance before (unadjusted; red) and after (adjusted; teal) the propensity-score–based adjustment for the IBS-Smart group and matched controls.<br> 
+
+  + The x‑axis shows the (standardized) mean difference between comparison groups for each covariate, with the vertical line at 0 indicating perfect balance.<br>
+  + In the unadjusted sample, several baseline characteristics exhibited meaningful imbalance, with standardized mean differences generally in the range of approximately −0.1 to −0.35 for variables such as `age`, `history_before_2019`, `MCAS_first_visit`, `IBS_D_first_visit`, and `refer_y_.` In addition, the propensity score distance measure showed substantial separation between groups (large positive mean difference), consistent with strong baseline differences in treatment assignment prior to adjustment.<br>
+  + After adjustment, the covariate mean differences moved markedly toward zero across all measured characteristics, indicating improved balance between groups. Most covariates cluster tightly around 0, suggesting the adjustment procedure was effective in reducing systematic baseline differences; the largest residual differences appear modest relative to the unadjusted sample.
+
+##### TRIO-Smart {.tabset}
+###### Summary
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show'}
+dt_test_prep <- dt_test_prep %>% mutate(triosmart_dv = case_when(is.na(trio_smart_dv)~0, TRUE~trio_smart_dv))                
+mod_matchts <- matchit(triosmart_dv ~ history_before_2019 +ibs_first_visit +SIBO_first_visit  ,
+                                      method = "nearest", data = dt_test_prep)
+                 
+summary(mod_matchts)
+```
+
+###### eQQ Plot
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show'}
+plot(mod_matchts)
+```
+
+###### Covariate balance
+```{r class.source = 'fold-hide', warning=FALSE,  message=FALSE, results='show'}
+love.plot(mod_matchts)   
+```
+
+> Figure displays a covariate balance plot (love plot) comparing standardized mean differences between study groups before (unadjusted; red) and after (adjusted; teal) application of the propensity-score–based adjustment. The variables assessed include `history_before_2019`, `ibs_first_visit`, `SIBO_first_visit`, and the propensity score `distance` metric.<br>
+
+  + In the unadjusted sample, several covariates show notable imbalance, with standardized mean differences ranging roughly from –0.20 to –0.35 for clinical history variables, and a large positive imbalance for the distance metric, indicating substantial baseline separation between groups prior to adjustment.<br>
+  + After adjustment, all covariates shift sharply toward zero, with adjusted mean differences clustering tightly at or near 0. This pattern indicates that the adjustment procedure successfully improved covariate balance across all measured characteristics, substantially reducing baseline confounding.
+  
